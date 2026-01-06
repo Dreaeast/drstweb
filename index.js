@@ -1,24 +1,24 @@
 const FILE_PATH = process.env.FILE_PATH || './.switch';
 const intervalInseconds = process.env.TIME || 100;
-const OPENSERVER = (process.env.OPENSERVER || 'true') === 'true'; // true OR false
+const OPENSERVER = (process.env.OPENSERVER || 'true') === 'true';
 const KEEPALIVE = (process.env.KEEPALIVE || 'false') === 'true';
 
-const ECH_PORT = process.env.ECH_PORT || 8001;
-const ECH_PROTOCOL = process.env.ECH_PROTOCOL || 'ws';
-const ECH_LISTEN = process.env.ECH_LISTEN || 'proxy://127.0.0.1:10808';
-const ECH_DNS = process.env.ECH_DNS || 'dns.alidns.com/dns-query';
-const ECH_URL = process.env.ECH_URL || 'cloudflare-ech.com';
+const EPORT = process.env.EPORT || 8001;
+const EPROTOCOL = process.env.EPROTOCOL || 'ws';
+const ELISTEN = process.env.ELISTEN || 'proxy://127.0.0.1:10808';
+const EDNS = process.env.EDNS || 'dns.alidns.com/dns-query';
+const EURL = process.env.EURL || 'cloudflare-ech.com';
 const CFIP = process.env.CFIP || 'ip.sb';
 const MY_DOMAIN = process.env.MY_DOMAIN || '';
-const ARGO_DOMAIN = process.env.ARGO_DOMAIN || 'zp.tcgd001.cf';
-const ARGO_AUTH = process.env.ARGO_AUTH || 'eyJhIjoiNjFmNmJhODg2ODkxNmJmZmM1ZDljNzM2NzdiYmIwMDYiLCJ0IjoiNWU2MGY5NmItMmI2Yi00M2MxLWE5OTAtMDA4NTI0YTE0MTk5IiwicyI6IlltVXhZak15TmpZdFpEQmlZeTAwTWpReUxUbGlabVF0TmpnNVlqQTJOR00wWmprMyJ9';
+const V_DOMAIN = process.env.V_DOMAIN || 'zp.tcgd001.cf';
+const V_AUTH = process.env.V_AUTH || 'eyJhIjoiNjFmNmJhODg2ODkxNmJmZmM1ZDljNzM2NzdiYmIwMDYiLCJ0IjoiNWU2MGY5NmItMmI2Yi00M2MxLWE5OTAtMDA4NTI0YTE0MTk5IiwicyI6IlltVXhZak15TmpZdFpEQmlZeTAwTWpReUxUbGlabVF0TmpnNVlqQTJOR00wWmprMyJ9';
 
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
 const UUID = process.env.UUID || 'e495d908-28e4-4d77-9b22-7d977108d407';
-const NEZHA_VERSION = process.env.NEZHA_VERSION || 'V1';
-const NEZHA_SERVER = process.env.NEZHA_SERVER || 'nazha.tcguangda.eu.org';
-const NEZHA_PORT = process.env.NEZHA_PORT || '443';
-const NEZHA_KEY = process.env.NEZHA_KEY || 'ilovehesufeng520';
+const NEZHA_VERSION = process.env.NEZHA_VERSION || '';
+const NEZHA_SERVER = process.env.NEZHA_SERVER || '';
+const NEZHA_PORT = process.env.NEZHA_PORT || '';
+const NEZHA_KEY = process.env.NEZHA_KEY || '';
 const SUB_NAME = process.env.SUB_NAME || 'zeeploy';
 const SUB_URL = process.env.SUB_URL || 'https://myjyup.shiguangda.nom.za/upload-a4aa34be-4373-4fdb-bff7-0a9c23405dac';
 
@@ -46,7 +46,7 @@ function createFolder(folderPath) {
     }
 }
 
-const pathsToDelete = ['bot', 'web', 'switch', 'config.yml', 'boot.log', 'log.txt'];
+const pathsToDelete = ['config.yml', 'boot.log', 'log.txt'];
 function cleanupOldFiles() {
     for (const file of pathsToDelete) {
         const filePath = path.join(FILE_PATH, file);
@@ -70,8 +70,16 @@ function cleanupOldFiles() {
 function httpserver() {
     const server = http.createServer((req, res) => {
         if (req.url === '/') {
-            res.writeHead(200);
-            res.end('hello world');
+            const indexPath = path.join(__dirname, 'index.html');
+            fs.readFile(indexPath, 'utf8', (error, data) => {
+                if (error) {
+                    res.writeHead(500);
+                    res.end('Error reading file');
+                } else {
+                    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+                    res.end(data);
+                }
+            });
         } else if (req.url === '/sub') {
             const subFilePath = FILE_PATH + '/log.txt';
             fs.readFile(subFilePath, 'utf8', (error, data) => {
@@ -257,39 +265,39 @@ async function downloadFiles() {
 }
 
 function argoType() {
-    if (!ARGO_AUTH || !ARGO_DOMAIN) {
-        console.log("ARGO_DOMAIN or ARGO_AUTH variable is empty, use quick tunnels");
+    if (!V_AUTH || !V_DOMAIN) {
+        console.log("V_DOMAIN or V_AUTH variable is empty, use quick tunnels");
         return;
     }
 
-    if (ARGO_AUTH.includes('TunnelSecret')) {
-        fs.writeFileSync(path.join(FILE_PATH, 'tunnel.json'), ARGO_AUTH);
+    if (V_AUTH.includes('TunnelSecret')) {
+        fs.writeFileSync(path.join(FILE_PATH, 'tunnel.json'), V_AUTH);
         const tunnelYaml = `
-        tunnel: ${ARGO_AUTH.split('"')[11]}
+        tunnel: ${V_AUTH.split('"')[11]}
         credentials-file: ${path.join(FILE_PATH, 'tunnel.json')}
         protocol: http2
 
         ingress:
-        - hostname: ${ARGO_DOMAIN}
-        service: http://localhost:${ECH_PORT}
+        - hostname: ${V_DOMAIN}
+        service: http://localhost:${EPORT}
         originRequest:
         noTLSVerify: true
         - service: http_status:404
         `;
         fs.writeFileSync(path.join(FILE_PATH, 'tunnel.yml'), tunnelYaml);
     } else {
-        console.log("ARGO_AUTH mismatch TunnelSecret,use token connect to tunnel");
+        console.log("V_AUTH mismatch TunnelSecret,use token connect to tunnel");
     }
 }
 
 let args;
 function get_cloud_flare_args() {
-    if (ARGO_AUTH.match(/^[A-Z0-9a-z=]{120,250}$/)) {
-        args = `tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${ARGO_AUTH}`;
-    } else if (ARGO_AUTH.match(/TunnelSecret/)) {
+    if (V_AUTH.match(/^[A-Z0-9a-z=]{120,250}$/)) {
+        args = `tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${V_AUTH}`;
+    } else if (V_AUTH.match(/TunnelSecret/)) {
         args = `tunnel --edge-ip-version auto --config ${FILE_PATH}/tunnel.yml run`;
     } else {
-        args = `tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile ${FILE_PATH}/boot.log --loglevel info --url http://localhost:${ECH_PORT}`;
+        args = `tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile ${FILE_PATH}/boot.log --loglevel info --url http://localhost:${EPORT}`;
     }
     return args
 }
@@ -365,7 +373,7 @@ async function runweb() {
     try {
         fs.statSync(webFilePath);
         try {
-            await execPromise(`nohup ${FILE_PATH}/web -l "${ECH_PROTOCOL}://0.0.0.0:${ECH_PORT}" -token "${UUID}" >/dev/null 2>&1 &`);
+            await execPromise(`nohup ${FILE_PATH}/web -l "${EPROTOCOL}://0.0.0.0:${EPORT}" -token "${UUID}" >/dev/null 2>&1 &`);
         } catch (error) {
             console.error(`web running error: ${error}`);
         }
@@ -490,9 +498,9 @@ let UPLOAD_DATA = ''
 async function extractDomains() {
     let currentArgoDomain = '';
     if (OPENSERVER) {
-        if (ARGO_AUTH && ARGO_DOMAIN) {
-            currentArgoDomain = ARGO_DOMAIN;
-            // console.log('Using configured ARGO_DOMAIN:', currentArgoDomain);
+        if (V_AUTH && V_DOMAIN) {
+            currentArgoDomain = V_DOMAIN;
+            // console.log('Using configured V_DOMAIN:', currentArgoDomain);
         } else {
             await delay(3000);
             currentArgoDomain = getArgoDomainFromLog();
@@ -538,9 +546,9 @@ async function extractDomains() {
         // console.log('Overriding ArgoDomain with MY_DOMAIN:', currentArgoDomain);
     }
     argoDomain = currentArgoDomain;
-    let ECH_SERVER;
-    ECH_SERVER = `wss://${argoDomain}:8443/tunnel`;
-    UPLOAD_DATA = `ech://server=${ECH_SERVER}&listen=${ECH_LISTEN}&token=${UUID}&dns=${ECH_DNS}&ech=${ECH_URL}&ip=${CFIP}&name=${SUB_NAME}`;
+    let ESERVER;
+    ESERVER = `wss://${argoDomain}:8443/tunnel`;
+    UPLOAD_DATA = `ech://server=${ESERVER}&listen=${ELISTEN}&token=${UUID}&dns=${EDNS}&ech=${EURL}&ip=${CFIP}&name=${SUB_NAME}`;
     // console.log('UPLOAD_DATA:', UPLOAD_DATA);
 }
 
@@ -597,9 +605,6 @@ function cleanfiles() {
             filesToDelete = [];
         } else {
             filesToDelete = [
-                `${FILE_PATH}/bot`,
-                `${FILE_PATH}/web`,
-                `${FILE_PATH}/switch`,
                 `${FILE_PATH}/config.yml`
             ];
         }
@@ -652,7 +657,7 @@ async function main() {
     cleanfiles();
     if (SUB_URL && SUB_NAME) {
         const response = await uploadSubscription(SUB_NAME, UPLOAD_DATA, SUB_URL);
-        if (KEEPALIVE && OPENSERVER && !ARGO_AUTH && !ARGO_DOMAIN) {
+        if (KEEPALIVE && OPENSERVER && !V_AUTH && !V_DOMAIN) {
             previousargoDomain = argoDomain;
             setInterval(subupload, intervalInseconds * 1000);
             // setInterval(subupload, 100000);  //100s
