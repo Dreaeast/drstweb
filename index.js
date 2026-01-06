@@ -3,7 +3,7 @@ const intervalInseconds = process.env.TIME || 100;
 const OPENSERVER = (process.env.OPENSERVER || 'true') === 'true'; // true OR false
 const KEEPALIVE = (process.env.KEEPALIVE || 'false') === 'true';
 
-const ECH_PORT = process.env.ECH_PORT || 8080;
+const ECH_PORT = process.env.ECH_PORT || 8001;
 const ECH_PROTOCOL = process.env.ECH_PROTOCOL || 'ws';
 const ECH_LISTEN = process.env.ECH_LISTEN || 'proxy://127.0.0.1:10808';
 const ECH_DNS = process.env.ECH_DNS || 'dns.alidns.com/dns-query';
