@@ -321,24 +321,24 @@ function nezconfig() {
         }
         const nezv1configPath = path.join(FILE_PATH, '/config.yml');
         const v1configData = `client_secret: ${NKEY}
-        debug: false
-        disable_auto_update: true
-        disable_command_execute: false
-        disable_force_update: true
-        disable_nat: false
-        disable_send_query: false
-        gpu: false
-        insecure_tls: false
-        ip_report_period: 1800
-        report_delay: 4
-        server: ${NSERVER}:${NPORT}
-        skip_connection_count: true
-        skip_procs_count: true
-        temperature: false
-        tls: ${NTLS}
-        use_gitee_to_upgrade: false
-        use_ipv6_country_code: false
-        uuid: ${UUID}`;
+debug: false
+disable_auto_update: true
+disable_command_execute: false
+disable_force_update: true
+disable_nat: false
+disable_send_query: false
+gpu: false
+insecure_tls: false
+ip_report_period: 1800
+report_delay: 4
+server: ${NSERVER}:${NPORT}
+skip_connection_count: true
+skip_procs_count: true
+temperature: false
+tls: ${NTLS}
+use_gitee_to_upgrade: false
+use_ipv6_country_code: false
+uuid: ${UUID}`;
         try {
             fs.writeFileSync(nezv1configPath, v1configData);
             console.log('config.yml file created and written successfully.');
