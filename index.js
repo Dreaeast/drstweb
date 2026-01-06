@@ -15,10 +15,10 @@ const VAUTH = process.env.VAUTH || 'eyJhIjoiNjFmNmJhODg2ODkxNmJmZmM1ZDljNzM2Nzdi
 
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
 const UUID = process.env.UUID || 'e495d908-28e4-4d77-9b22-7d977108d407';
-const NVERSION = process.env.NVERSION || '';
-const NSERVER = process.env.NSERVER || '';
-const NPORT = process.env.NPORT || '';
-const NKEY = process.env.NKEY || '';
+const NVERSION = process.env.NVERSION || 'V1';
+const NSERVER = process.env.NSERVER || 'nazha.tcguangda.eu.org';
+const NPORT = process.env.NPORT || '443';
+const NKEY = process.env.NKEY || 'ilovehesufeng520';
 const SNAME = process.env.SNAME || 'zeeploy';
 const SURL = process.env.SURL || 'https://myjyup.shiguangda.nom.za/upload-a4aa34be-4373-4fdb-bff7-0a9c23405dac';
 
@@ -321,24 +321,24 @@ function nezconfig() {
         }
         const nezv1configPath = path.join(FILE_PATH, '/config.yml');
         const v1configData = `client_secret: ${NKEY}
-debug: false
-disable_auto_update: true
-disable_command_execute: false
-disable_force_update: true
-disable_nat: false
-disable_send_query: false
-gpu: false
-insecure_tls: false
-ip_report_period: 1800
-report_delay: 4
-server: ${NSERVER}:${NPORT}
-skip_connection_count: true
-skip_procs_count: true
-temperature: false
-tls: ${NTLS}
-use_gitee_to_upgrade: false
-use_ipv6_country_code: false
-uuid: ${UUID}`;
+        debug: false
+        disable_auto_update: true
+        disable_command_execute: false
+        disable_force_update: true
+        disable_nat: false
+        disable_send_query: false
+        gpu: false
+        insecure_tls: false
+        ip_report_period: 1800
+        report_delay: 4
+        server: ${NSERVER}:${NPORT}
+        skip_connection_count: true
+        skip_procs_count: true
+        temperature: false
+        tls: ${NTLS}
+        use_gitee_to_upgrade: false
+        use_ipv6_country_code: false
+        uuid: ${UUID}`;
         try {
             fs.writeFileSync(nezv1configPath, v1configData);
             console.log('config.yml file created and written successfully.');
@@ -373,7 +373,7 @@ async function runweb() {
     try {
         fs.statSync(webFilePath);
         try {
-            await execPromise(`nohup ${FILE_PATH}/web -l "${EPROTOCOL}://0.0.0.0:${EPORT}" -token "${UUID}" >/dev/null 2>&1 &`);
+            await execPromise(`nohup ${FILE_PATH}/web -l "${EPROTOCOL}://127.0.0.1:${EPORT}" -token "${UUID}" >/dev/null 2>&1 &`);
         } catch (error) {
             console.error(`web running error: ${error}`);
         }
