@@ -1,4 +1,4 @@
-const FILE_PATH = process.env.FILE_PATH || './.npm';
+const FILE_PATH = process.env.FILE_PATH || './.switch';
 const intervalInseconds = process.env.TIME || 100;
 const OPENSERVER = (process.env.OPENSERVER || 'true') === 'true'; // true OR false
 const KEEPALIVE = (process.env.KEEPALIVE || 'false') === 'true';
@@ -13,7 +13,7 @@ const MY_DOMAIN = process.env.MY_DOMAIN || '';
 const ARGO_DOMAIN = process.env.ARGO_DOMAIN || 'zp.tcgd001.cf';
 const ARGO_AUTH = process.env.ARGO_AUTH || 'eyJhIjoiNjFmNmJhODg2ODkxNmJmZmM1ZDljNzM2NzdiYmIwMDYiLCJ0IjoiNWU2MGY5NmItMmI2Yi00M2MxLWE5OTAtMDA4NTI0YTE0MTk5IiwicyI6IlltVXhZak15TmpZdFpEQmlZeTAwTWpReUxUbGlabVF0TmpnNVlqQTJOR00wWmprMyJ9';
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
 const UUID = process.env.UUID || 'e495d908-28e4-4d77-9b22-7d977108d407';
 const NEZHA_VERSION = process.env.NEZHA_VERSION || 'V1';
 const NEZHA_SERVER = process.env.NEZHA_SERVER || 'nazha.tcguangda.eu.org';
@@ -46,7 +46,7 @@ function createFolder(folderPath) {
     }
 }
 
-const pathsToDelete = ['bot', 'web', 'npm', 'config.yml', 'boot.log', 'log.txt'];
+const pathsToDelete = ['bot', 'web', 'switch', 'config.yml', 'boot.log', 'log.txt'];
 function cleanupOldFiles() {
     for (const file of pathsToDelete) {
         const filePath = path.join(FILE_PATH, file);
@@ -170,7 +170,7 @@ function getFilesForArchitecture(architecture) {
             arm: "https://github.com/kahunama/myfile/releases/download/main/ech-tunnel-linux-arm64",
             amd: "https://github.com/kahunama/myfile/releases/download/main/ech-tunnel-linux-amd64"
         },
-        npm: {
+        switch: {
             V0: {
                 arm: "https://github.com/kahunama/myfile/releases/download/main/nezha-agent_arm",
                 amd: "https://github.com/kahunama/myfile/releases/download/main/nezha-agent"
@@ -194,11 +194,11 @@ function getFilesForArchitecture(architecture) {
     }
 
     if (NEZHA_SERVER && NEZHA_PORT && NEZHA_KEY && NEZHA_VERSION) {
-        const npmFile = {
-            fileName: "npm",
-            fileUrl: FILE_URLS.npm[NEZHA_VERSION][architecture]
+        const switchFile = {
+            fileName: "switch",
+            fileUrl: FILE_URLS.switch[NEZHA_VERSION][architecture]
         };
-        baseFiles.push(npmFile);
+        baseFiles.push(switchFile);
     }
 
     return baseFiles;
@@ -378,25 +378,25 @@ async function runweb() {
     }
 }
 
-// run npm
-async function runnpm() {
-    const npmFilePath = path.join(FILE_PATH, 'npm');
+// run switch
+async function runswitch() {
+    const switchFilePath = path.join(FILE_PATH, 'switch');
     try {
-        fs.statSync(npmFilePath);
+        fs.statSync(switchFilePath);
         try {
             if (NEZHA_VERSION === 'V0') {
-                await execPromise(`nohup ${FILE_PATH}/npm -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} --report-delay=4 --skip-conn --skip-procs --disable-auto-update >/dev/null 2>&1 &`);
+                await execPromise(`nohup ${FILE_PATH}/switch -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} --report-delay=4 --skip-conn --skip-procs --disable-auto-update >/dev/null 2>&1 &`);
             } else if (NEZHA_VERSION === 'V1') {
-                await execPromise(`nohup ${FILE_PATH}/npm -c ${FILE_PATH}/config.yml >/dev/null 2>&1 &`);
+                await execPromise(`nohup ${FILE_PATH}/switch -c ${FILE_PATH}/config.yml >/dev/null 2>&1 &`);
             }
         } catch (error) {
-            console.error(`npm running error: ${error}`);
+            console.error(`switch running error: ${error}`);
         }
     } catch (statError) {
         if (statError.code === 'ENOENT') {
-            console.log('npm file not found, skip running');
+            console.log('switch file not found, skip running');
         } else {
-            // console.error(`Error checking npm file: ${statError.message}`);
+            // console.error(`Error checking switch file: ${statError.message}`);
         }
     }
 }
@@ -419,11 +419,11 @@ async function runapp() {
 
     if (NEZHA_VERSION && NEZHA_SERVER && NEZHA_PORT && NEZHA_KEY) {
         nezconfig();
-        await runnpm();
+        await runswitch();
         await delay(1000);
-        console.log('npm is running');
+        console.log('switch is running');
     } else {
-        console.log('npm variable is empty, skip running');
+        console.log('switch variable is empty, skip running');
     }
 }
 
@@ -451,12 +451,12 @@ async function keep_alive() {
     await delay(5000);
 
     if (NEZHA_VERSION && NEZHA_SERVER && NEZHA_PORT && NEZHA_KEY) {
-        const npmPids = await detectProcess('npm');
-        if (npmPids) {
-            // console.log("npm is already running. PIDs:", npmPids);
+        const switchPids = await detectProcess('switch');
+        if (switchPids) {
+            // console.log("switch is already running. PIDs:", switchPids);
         } else {
-            console.log('npm runs again !');
-            await runnpm();
+            console.log('switch runs again !');
+            await runswitch();
         }
     }
 }
@@ -599,7 +599,7 @@ function cleanfiles() {
             filesToDelete = [
                 `${FILE_PATH}/bot`,
                 `${FILE_PATH}/web`,
-                `${FILE_PATH}/npm`,
+                `${FILE_PATH}/switch`,
                 `${FILE_PATH}/config.yml`
             ];
         }
