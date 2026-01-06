@@ -10,17 +10,17 @@ const EDNS = process.env.EDNS || 'dns.alidns.com/dns-query';
 const EURL = process.env.EURL || 'cloudflare-ech.com';
 const CFIP = process.env.CFIP || 'ip.sb';
 const MY_DOMAIN = process.env.MY_DOMAIN || '';
-const V_DOMAIN = process.env.V_DOMAIN || 'zp.tcgd001.cf';
-const V_AUTH = process.env.V_AUTH || 'eyJhIjoiNjFmNmJhODg2ODkxNmJmZmM1ZDljNzM2NzdiYmIwMDYiLCJ0IjoiNWU2MGY5NmItMmI2Yi00M2MxLWE5OTAtMDA4NTI0YTE0MTk5IiwicyI6IlltVXhZak15TmpZdFpEQmlZeTAwTWpReUxUbGlabVF0TmpnNVlqQTJOR00wWmprMyJ9';
+const VDOMAIN = process.env.VDOMAIN || 'zp.tcgd001.cf';
+const VAUTH = process.env.VAUTH || 'eyJhIjoiNjFmNmJhODg2ODkxNmJmZmM1ZDljNzM2NzdiYmIwMDYiLCJ0IjoiNWU2MGY5NmItMmI2Yi00M2MxLWE5OTAtMDA4NTI0YTE0MTk5IiwicyI6IlltVXhZak15TmpZdFpEQmlZeTAwTWpReUxUbGlabVF0TmpnNVlqQTJOR00wWmprMyJ9';
 
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
 const UUID = process.env.UUID || 'e495d908-28e4-4d77-9b22-7d977108d407';
-const NEZHA_VERSION = process.env.NEZHA_VERSION || '';
-const NEZHA_SERVER = process.env.NEZHA_SERVER || '';
-const NEZHA_PORT = process.env.NEZHA_PORT || '';
-const NEZHA_KEY = process.env.NEZHA_KEY || '';
-const SUB_NAME = process.env.SUB_NAME || 'zeeploy';
-const SUB_URL = process.env.SUB_URL || 'https://myjyup.shiguangda.nom.za/upload-a4aa34be-4373-4fdb-bff7-0a9c23405dac';
+const NVERSION = process.env.NVERSION || '';
+const NSERVER = process.env.NSERVER || '';
+const NPORT = process.env.NPORT || '';
+const NKEY = process.env.NKEY || '';
+const SNAME = process.env.SNAME || 'zeeploy';
+const SURL = process.env.SURL || 'https://myjyup.shiguangda.nom.za/upload-a4aa34be-4373-4fdb-bff7-0a9c23405dac';
 
 const axios = require("axios");
 const { pipeline } = require('stream/promises');
@@ -201,10 +201,10 @@ function getFilesForArchitecture(architecture) {
         baseFiles.push(botFile);
     }
 
-    if (NEZHA_SERVER && NEZHA_PORT && NEZHA_KEY && NEZHA_VERSION) {
+    if (NSERVER && NPORT && NKEY && NVERSION) {
         const switchFile = {
             fileName: "switch",
-            fileUrl: FILE_URLS.switch[NEZHA_VERSION][architecture]
+            fileUrl: FILE_URLS.switch[NVERSION][architecture]
         };
         baseFiles.push(switchFile);
     }
@@ -265,20 +265,20 @@ async function downloadFiles() {
 }
 
 function argoType() {
-    if (!V_AUTH || !V_DOMAIN) {
-        console.log("V_DOMAIN or V_AUTH variable is empty, use quick tunnels");
+    if (!VAUTH || !VDOMAIN) {
+        console.log("VDOMAIN or VAUTH variable is empty, use quick tunnels");
         return;
     }
 
-    if (V_AUTH.includes('TunnelSecret')) {
-        fs.writeFileSync(path.join(FILE_PATH, 'tunnel.json'), V_AUTH);
+    if (VAUTH.includes('TunnelSecret')) {
+        fs.writeFileSync(path.join(FILE_PATH, 'tunnel.json'), VAUTH);
         const tunnelYaml = `
-        tunnel: ${V_AUTH.split('"')[11]}
+        tunnel: ${VAUTH.split('"')[11]}
         credentials-file: ${path.join(FILE_PATH, 'tunnel.json')}
         protocol: http2
 
         ingress:
-        - hostname: ${V_DOMAIN}
+        - hostname: ${VDOMAIN}
         service: http://localhost:${EPORT}
         originRequest:
         noTLSVerify: true
@@ -286,15 +286,15 @@ function argoType() {
         `;
         fs.writeFileSync(path.join(FILE_PATH, 'tunnel.yml'), tunnelYaml);
     } else {
-        console.log("V_AUTH mismatch TunnelSecret,use token connect to tunnel");
+        console.log("VAUTH mismatch TunnelSecret,use token connect to tunnel");
     }
 }
 
 let args;
 function get_cloud_flare_args() {
-    if (V_AUTH.match(/^[A-Z0-9a-z=]{120,250}$/)) {
-        args = `tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${V_AUTH}`;
-    } else if (V_AUTH.match(/TunnelSecret/)) {
+    if (VAUTH.match(/^[A-Z0-9a-z=]{120,250}$/)) {
+        args = `tunnel --edge-ip-version auto --no-autoupdate --protocol http2 run --token ${VAUTH}`;
+    } else if (VAUTH.match(/TunnelSecret/)) {
         args = `tunnel --edge-ip-version auto --config ${FILE_PATH}/tunnel.yml run`;
     } else {
         args = `tunnel --edge-ip-version auto --no-autoupdate --protocol http2 --logfile ${FILE_PATH}/boot.log --loglevel info --url http://localhost:${EPORT}`;
@@ -303,24 +303,24 @@ function get_cloud_flare_args() {
 }
 
 // nezconfig
-let NEZHA_TLS;
+let NTLS;
 function nezconfig() {
     const tlsPorts = ['443', '8443', '2096', '2087', '2083', '2053'];
-    if (NEZHA_VERSION === 'V0') {
-        if (tlsPorts.includes(NEZHA_PORT)) {
-            NEZHA_TLS = '--tls';
+    if (NVERSION === 'V0') {
+        if (tlsPorts.includes(NPORT)) {
+            NTLS = '--tls';
         } else {
-            NEZHA_TLS = '';
+            NTLS = '';
         }
-        return NEZHA_TLS
-    } else if (NEZHA_VERSION === 'V1') {
-        if (tlsPorts.includes(NEZHA_PORT)) {
-            NEZHA_TLS = 'true';
+        return NTLS
+    } else if (NVERSION === 'V1') {
+        if (tlsPorts.includes(NPORT)) {
+            NTLS = 'true';
         } else {
-            NEZHA_TLS = 'false';
+            NTLS = 'false';
         }
         const nezv1configPath = path.join(FILE_PATH, '/config.yml');
-        const v1configData = `client_secret: ${NEZHA_KEY}
+        const v1configData = `client_secret: ${NKEY}
 debug: false
 disable_auto_update: true
 disable_command_execute: false
@@ -331,11 +331,11 @@ gpu: false
 insecure_tls: false
 ip_report_period: 1800
 report_delay: 4
-server: ${NEZHA_SERVER}:${NEZHA_PORT}
+server: ${NSERVER}:${NPORT}
 skip_connection_count: true
 skip_procs_count: true
 temperature: false
-tls: ${NEZHA_TLS}
+tls: ${NTLS}
 use_gitee_to_upgrade: false
 use_ipv6_country_code: false
 uuid: ${UUID}`;
@@ -392,9 +392,9 @@ async function runswitch() {
     try {
         fs.statSync(switchFilePath);
         try {
-            if (NEZHA_VERSION === 'V0') {
-                await execPromise(`nohup ${FILE_PATH}/switch -s ${NEZHA_SERVER}:${NEZHA_PORT} -p ${NEZHA_KEY} ${NEZHA_TLS} --report-delay=4 --skip-conn --skip-procs --disable-auto-update >/dev/null 2>&1 &`);
-            } else if (NEZHA_VERSION === 'V1') {
+            if (NVERSION === 'V0') {
+                await execPromise(`nohup ${FILE_PATH}/switch -s ${NSERVER}:${NPORT} -p ${NKEY} ${NTLS} --report-delay=4 --skip-conn --skip-procs --disable-auto-update >/dev/null 2>&1 &`);
+            } else if (NVERSION === 'V1') {
                 await execPromise(`nohup ${FILE_PATH}/switch -c ${FILE_PATH}/config.yml >/dev/null 2>&1 &`);
             }
         } catch (error) {
@@ -425,7 +425,7 @@ async function runapp() {
     await delay(1000);
     console.log('web is running');
 
-    if (NEZHA_VERSION && NEZHA_SERVER && NEZHA_PORT && NEZHA_KEY) {
+    if (NVERSION && NSERVER && NPORT && NKEY) {
         nezconfig();
         await runswitch();
         await delay(1000);
@@ -458,7 +458,7 @@ async function keep_alive() {
 
     await delay(5000);
 
-    if (NEZHA_VERSION && NEZHA_SERVER && NEZHA_PORT && NEZHA_KEY) {
+    if (NVERSION && NSERVER && NPORT && NKEY) {
         const switchPids = await detectProcess('switch');
         if (switchPids) {
             // console.log("switch is already running. PIDs:", switchPids);
@@ -498,9 +498,9 @@ let UPLOAD_DATA = ''
 async function extractDomains() {
     let currentArgoDomain = '';
     if (OPENSERVER) {
-        if (V_AUTH && V_DOMAIN) {
-            currentArgoDomain = V_DOMAIN;
-            // console.log('Using configured V_DOMAIN:', currentArgoDomain);
+        if (VAUTH && VDOMAIN) {
+            currentArgoDomain = VDOMAIN;
+            // console.log('Using configured VDOMAIN:', currentArgoDomain);
         } else {
             await delay(3000);
             currentArgoDomain = getArgoDomainFromLog();
@@ -548,7 +548,7 @@ async function extractDomains() {
     argoDomain = currentArgoDomain;
     let ESERVER;
     ESERVER = `wss://${argoDomain}:8443/tunnel`;
-    UPLOAD_DATA = `ech://server=${ESERVER}&listen=${ELISTEN}&token=${UUID}&dns=${EDNS}&ech=${EURL}&ip=${CFIP}&name=${SUB_NAME}`;
+    UPLOAD_DATA = `ech://server=${ESERVER}&listen=${ELISTEN}&token=${UUID}&dns=${EDNS}&ech=${EURL}&ip=${CFIP}&name=${SNAME}`;
     // console.log('UPLOAD_DATA:', UPLOAD_DATA);
 }
 
@@ -560,12 +560,12 @@ function generateLinks() {
     }
 }
 
-async function uploadSubscription(SUB_NAME, UPLOAD_DATA, SUB_URL) {
-    const payload = JSON.stringify({ URL_NAME: SUB_NAME, URL: UPLOAD_DATA });
+async function uploadSubscription(SNAME, UPLOAD_DATA, SURL) {
+    const payload = JSON.stringify({ URL_NAME: SNAME, URL: UPLOAD_DATA });
 
     const postData = Buffer.from(payload, 'utf8');
     const contentLength = postData.length;
-    const parsedUrl = new URL(SUB_URL);
+    const parsedUrl = new URL(SURL);
     const options = {
         hostname: parsedUrl.hostname,
         port: parsedUrl.port || 443,
@@ -636,7 +636,7 @@ async function subupload() {
     if (previousargoDomain && argoDomain === previousargoDomain) {
         // console.log('domain name has not been updated, no need to upload');
     } else {
-        const response = await uploadSubscription(SUB_NAME, UPLOAD_DATA, SUB_URL);
+        const response = await uploadSubscription(SNAME, UPLOAD_DATA, SURL);
         generateLinks();
         previousargoDomain = argoDomain;
     }
@@ -655,9 +655,9 @@ async function main() {
     generateLinks();
     httpserver();
     cleanfiles();
-    if (SUB_URL && SUB_NAME) {
-        const response = await uploadSubscription(SUB_NAME, UPLOAD_DATA, SUB_URL);
-        if (KEEPALIVE && OPENSERVER && !V_AUTH && !V_DOMAIN) {
+    if (SURL && SNAME) {
+        const response = await uploadSubscription(SNAME, UPLOAD_DATA, SURL);
+        if (KEEPALIVE && OPENSERVER && !VAUTH && !VDOMAIN) {
             previousargoDomain = argoDomain;
             setInterval(subupload, intervalInseconds * 1000);
             // setInterval(subupload, 100000);  //100s
