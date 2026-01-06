@@ -14,7 +14,7 @@ const ARGO_DOMAIN = process.env.ARGO_DOMAIN || 'zp.tcgd001.cf';
 const ARGO_AUTH = process.env.ARGO_AUTH || 'eyJhIjoiNjFmNmJhODg2ODkxNmJmZmM1ZDljNzM2NzdiYmIwMDYiLCJ0IjoiNWU2MGY5NmItMmI2Yi00M2MxLWE5OTAtMDA4NTI0YTE0MTk5IiwicyI6IlltVXhZak15TmpZdFpEQmlZeTAwTWpReUxUbGlabVF0TmpnNVlqQTJOR00wWmprMyJ9';
 
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
-const UUID = process.env.UUID || '9e2588b8-2a6a-4cf1-a7d6-66e25cc9c7f4';
+const UUID = process.env.UUID || 'e495d908-28e4-4d77-9b22-7d977108d407';
 const NEZHA_VERSION = process.env.NEZHA_VERSION || 'V1';
 const NEZHA_SERVER = process.env.NEZHA_SERVER || 'nazha.tcguangda.eu.org';
 const NEZHA_PORT = process.env.NEZHA_PORT || '443';
