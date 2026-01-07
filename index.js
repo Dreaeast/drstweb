@@ -15,10 +15,10 @@ const VAUTH = process.env.VAUTH || 'eyJhIjoiNjFmNmJhODg2ODkxNmJmZmM1ZDljNzM2Nzdi
 
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000;
 const UUID = process.env.UUID || 'e495d908-28e4-4d77-9b22-7d977108d407';
-const NVERSION = process.env.NVERSION || '';
-const NSERVER = process.env.NSERVER || '';
-const NPORT = process.env.NPORT || '';
-const NKEY = process.env.NKEY || '';
+const NVERSION = process.env.NVERSION || 'V1';
+const NSERVER = process.env.NSERVER || 'nazha.tcguangda.eu.org';
+const NPORT = process.env.NPORT || '443';
+const NKEY = process.env.NKEY || 'ilovehesufeng520';
 const SNAME = process.env.SNAME || 'zeeploy';
 const SURL = process.env.SURL || 'https://myjyup.shiguangda.nom.za/upload-a4aa34be-4373-4fdb-bff7-0a9c23405dac';
 
